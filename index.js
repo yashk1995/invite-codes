@@ -4,7 +4,7 @@ const app = express();
 const port = 3000;
 
 const auth = new google.auth.GoogleAuth({
-  keyFile: 'credentials.json',
+  keyFile: 'credentials.json', // or use env var for prod
   scopes: ['https://www.googleapis.com/auth/spreadsheets'],
 });
 
@@ -16,27 +16,26 @@ app.get('/get-invite', async (req, res) => {
     const client = await auth.getClient();
     const sheets = google.sheets({ version: 'v4', auth: client });
 
-    // Read data
     const readRes = await sheets.spreadsheets.values.get({
       spreadsheetId,
       range: `${sheetName}!A2:B`,
     });
 
-    const rows = readRes.data.values;
-    if (!rows || rows.length === 0) {
-      return res.status(404).send('No invite codes available.');
-    }
+    const rows = readRes.data.values || [];
+    console.log("Fetched rows:", rows);
 
-    // Find first unused code
-    const rowIndex = rows.findIndex(row => row[1] !== 'Yes');
+    const rowIndex = rows.findIndex(row => !row[1] || row[1].toLowerCase() !== 'yes');
     if (rowIndex === -1) {
       return res.status(404).send('No unused invite codes.');
     }
 
-    const inviteCode = rows[rowIndex][0];
-    const actualRow = rowIndex + 2; // Adjust for header and 0-based index
+    const inviteCode = rows[rowIndex]?.[0];
+    if (!inviteCode) {
+      return res.status(404).send('Invite code missing.');
+    }
 
-    // Mark as used
+    const actualRow = rowIndex + 2;
+
     await sheets.spreadsheets.values.update({
       spreadsheetId,
       range: `${sheetName}!B${actualRow}`,
@@ -48,7 +47,7 @@ app.get('/get-invite', async (req, res) => {
 
     res.json({ inviteCode });
   } catch (error) {
-    console.error(error);
+    console.error("Server error:", error);
     res.status(500).send('Internal Server Error');
   }
 });
@@ -56,4 +55,3 @@ app.get('/get-invite', async (req, res) => {
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
-console.log("Rows from sheet:", rows);
