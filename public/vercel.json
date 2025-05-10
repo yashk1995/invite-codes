@@ -1,9 +1,9 @@
 {
   "version": 2,
   "builds": [
-    {
-      "src": "api/get-invite.js",
-      "use": "@vercel/node"
-    }
+    { "src": "api/get-invite.js", "use": "@vercel/node" }
+  ],
+  "routes": [
+    { "src": "/api/get-invite", "dest": "api/get-invite.js" }
   ]
 }
