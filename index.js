@@ -56,3 +56,4 @@ app.get('/get-invite', async (req, res) => {
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
+console.log("Rows from sheet:", rows);
