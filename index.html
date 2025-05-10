@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Your Invite Code</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f5f7fa;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .card {
+      background: white;
+      padding: 2rem 3rem;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+    .code {
+      font-size: 2rem;
+      color: #2d88ff;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Your Invite Code</h2>
+    <div id="inviteCode" class="code">Loading...</div>
+  </div>
+
+  <script>
+    const airtableBaseId = 'appwDwG3FxcFHnEca/pag9wVJZmfyQElTZY'; // Replace with your actual Base ID (starts with "app...")
+    const airtableTableName = 'Invite Codes'; // e.g. "Invite Codes"
+    const airtableToken = 'Bearer patDRrvCkff1A7gRi.36618c84024071a68c2086e4342b99740547afbcf679101d23b8b7208daa54b7'; // 
+
+    // Step 1: Get one unused code
+    fetch(`https://api.airtable.com/v0/${airtableBaseId}/${encodeURIComponent(airtableTableName)}?filterByFormula=Used%3D%22No%22&maxRecords=1`, {
+      headers: {
+        Authorization: airtableToken
+      }
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (!data.records || data.records.length === 0) {
+        document.getElementById('inviteCode').innerText = 'No codes left';
+        return;
+      }
+
+      const record = data.records[0];
+      const code = record.fields['Invite Code'];
+      document.getElementById('inviteCode').innerText = code;
+
+      // Step 2: Mark the code as used
+      fetch(`https://api.airtable.com/v0/${airtableBaseId}/${airtableTableName}/${record.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: airtableToken
+        },
+        body: JSON.stringify({
+          fields: {
+            Used: "Yes"
+          }
+        })
+      });
+    })
+    .catch(err => {
+      console.error(err);
+      document.getElementById('inviteCode').innerText = 'Error loading code';
+    });
+  </script>
+</body>
+</html>
