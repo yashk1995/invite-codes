@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Your Invite Code</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f5f7fa;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .card {
+      background: white;
+      padding: 2rem 3rem;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+    .code {
+      font-size: 2rem;
+      color: #2d88ff;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Your Invite Code</h2>
+    <div id="inviteCode" class="code">Loading...</div>
+  </div>
+
+  <script>
+    fetch('https://invite-codes-hk5q.vercel.app/')
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('inviteCode').textContent = data.inviteCode;
+      })
+      .catch(error => {
+        console.error(error);
+        document.getElementById('inviteCode').textContent = 'Failed to fetch invite code.';
+      });
+  </script>
+</body>
+</html>
