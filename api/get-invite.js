@@ -1,6 +1,6 @@
-const { google } = require('googleapis');
+import { google } from 'googleapis';
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   const auth = new google.auth.GoogleAuth({
     credentials: JSON.parse(process.env.GOOGLE_CREDENTIALS),
     scopes: ['https://www.googleapis.com/auth/spreadsheets'],
@@ -19,14 +19,12 @@ module.exports = async (req, res) => {
     });
 
     const rows = readRes.data.values || [];
-    console.log("Fetched rows:", rows);
-
     const rowIndex = rows.findIndex(row => !row[1] || row[1].toLowerCase() !== 'yes');
     if (rowIndex === -1) {
       return res.status(404).json({ error: 'No unused invite codes.' });
     }
 
-    const inviteCode = rows[rowIndex][0];
+    const code = rows[rowIndex][0];
     const actualRow = rowIndex + 2;
 
     await sheets.spreadsheets.values.update({
@@ -36,9 +34,9 @@ module.exports = async (req, res) => {
       requestBody: { values: [['Yes']] },
     });
 
-    res.status(200).json({ inviteCode });
+    res.status(200).json({ inviteCode: code });
   } catch (err) {
-    console.error("Server error:", err);
+    console.error(err);
     res.status(500).json({ error: 'Internal Server Error' });
   }
-};
+}
